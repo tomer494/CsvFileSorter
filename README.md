@@ -1,4 +1,5 @@
-# CsvFileSorter is a practice project that means to design and produce a program that can sort larg csv files, with short amount of memory useg.
+# CsvFileSorter 
+A practice project that means to design and produce a program that can sort larg csv files, with short amount of memory useg.
 
 For the synchronized version please execute 
 csvFileSort.jar
