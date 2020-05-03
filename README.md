@@ -1,5 +1,16 @@
 # CsvFileSorter 
-A practice project that means to design and produce a program that can sort larg csv files, with short amount of memory useg.
+A practice project that means to design and produce a program that can sort larg csv files, with shortest amount of memory useg.
+The program must not exceade the amount of records read at the same time and must keep the storing of key's in memory at the minimum, about double the times of read records.
+
+This program is intended to run by a O(logn) complexity, unfortunently for me my AVL implrmentation is too buggy to publish so at the worst case it runs in an O(n)* complexity.
+
+Reading the file twice takes n lines o(1) once at the begining and second time at the end.
+Sorting by batches takes n/batch O(logn) times by using a priority indexing algorithm.
+Sorting by a binary sorted tree on a low sized index node that contains the minimum of data to run is n/batch O(logn)*.
+The "Secound time" is done for butting the lines each in its own batch.
+The "Third time" is done form the batches at the sorted order to create the final sorted file.
+
+*worst case
 
 For the synchronized version please execute 
 csvFileSort.jar
