@@ -3,6 +3,7 @@ A practice project that means to design and produce a program that can sort larg
 
 For the synchronized version please execute 
 csvFileSort.jar
+
 For the Asynchronous version please execute
 acsvFileSort.jar
 
