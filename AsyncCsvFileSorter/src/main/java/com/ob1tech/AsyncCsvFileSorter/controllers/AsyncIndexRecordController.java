@@ -25,7 +25,7 @@ import com.ob1tech.CsvFileSorter.dateModel.IndexNode;
  */
 public class AsyncIndexRecordController<T extends Comparable<T>> extends IndexRecordController<T> {
 
-	private Object lock,lock2;
+	private Object lock,lock2,lockBalance;
 	/**
 	 * Node lock tacker
 	 */
@@ -39,6 +39,7 @@ public class AsyncIndexRecordController<T extends Comparable<T>> extends IndexRe
 		super(batchController, dataFile, keyType, maxInMemoryNodes);
 		lock = new Object();
 		lock2 = new Object();
+		lockBalance = new Object();
 		treeLockList = new ConcurrentHashMap<Long, Boolean>();
 	}
 	
@@ -87,6 +88,9 @@ public class AsyncIndexRecordController<T extends Comparable<T>> extends IndexRe
 				treeLockList.put(preSubTreeHead, false);
 			}
 			preSubTreeHead = subTreeHead;
+		}
+		synchronized (lockBalance) {
+			balance();
 		}
 		treeLockList.remove(subTreeHead);
 		treeLockList.remove(0l);

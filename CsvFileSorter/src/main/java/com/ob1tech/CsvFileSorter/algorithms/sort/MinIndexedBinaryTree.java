@@ -1,7 +1,12 @@
 package com.ob1tech.CsvFileSorter.algorithms.sort;
 
+import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -42,6 +47,8 @@ public abstract class MinIndexedBinaryTree<T> implements Iterable<T>{
 	 */
 	private IndexNode<T> root;
 
+	private List<Long> lazyBalanceQeueu;
+
 	/**
 	 * logger
 	 */
@@ -57,6 +64,7 @@ public abstract class MinIndexedBinaryTree<T> implements Iterable<T>{
 
 		treeSize = new AtomicLong();
 		root = null;
+		lazyBalanceQeueu = new LinkedList<Long>();
 	}
 
 	/**
@@ -99,11 +107,10 @@ public abstract class MinIndexedBinaryTree<T> implements Iterable<T>{
 			root = value;
 		}else {
 			//get the head of the tree
-			IndexNode<T> pointer = root;
+			IndexNode<T> pointer = getRoot();
 			//add element to tree
 			add(pointer, value, nodeIndex, null);
 		}
-		
 		
 		/**
 		 * For debug purposes only. Do not use on large files, too expensive.
@@ -113,6 +120,177 @@ public abstract class MinIndexedBinaryTree<T> implements Iterable<T>{
 		}
 		
 	}
+
+	protected void balance() {
+		Set<Long> balanced = new HashSet<Long>();
+		//Mast check root
+		/*IndexNode<T> rootLeft = getRoot().getLeftNode()!=null?getValueOf(getRoot().getLeftNode()):null;
+		IndexNode<T> rootRight = getRoot().getRightNode()!=null?getValueOf(getRoot().getRightNode()):null;
+		update(getRoot(), rootLeft, rootRight);
+		lazyBalanceQeueu.add(0,0l);*/
+		Long nodeId = (lazyBalanceQeueu.size()>0)?lazyBalanceQeueu.remove(lazyBalanceQeueu.size()-1):null;
+		while(nodeId!=null) {
+			if(balanced.add(nodeId)) {
+				IndexNode<T> newRoot = balance(nodeId);
+				if(newRoot!=null && getRoot().getId()==nodeId) {
+		    		setRoot(newRoot);
+		    	}
+			}
+			if(lazyBalanceQeueu.size()>0) {
+				nodeId = lazyBalanceQeueu.remove(lazyBalanceQeueu.size()-1);
+			}else {
+				nodeId = null;
+			}
+		}
+		balanced.clear();
+		balanced = null;
+	}
+
+	private IndexNode<T> balance(long nodeIndex) {
+		IndexNode<T> node = getValueOf(nodeIndex);
+		IndexNode<T> newParent = null;
+	    
+		IndexNode<T> leftNode = node.getLeftNode()!=null?getValueOf(node.getLeftNode()):null;
+	    IndexNode<T> rightNode = node.getRightNode()!=null?getValueOf(node.getRightNode()):null;
+	      
+	    // Left heavy subtree.
+	    long balanceLeft = leftNode!=null?leftNode.getBalance():0;
+		long balanceRight = rightNode!=null?rightNode.getBalance():0;
+		if (node.getBalance() <= -2) {
+
+	      // Left-Left case.
+	      if (Math.abs(balanceLeft) < balanceRight) {
+	    	  newParent = leftLeftCase(node, leftNode, rightNode);
+
+	        // Left-Right case.
+	      } else {
+	    	  newParent = leftRightCase(node, leftNode, rightNode);
+	      }
+
+	      // Right heavy subtree needs balancing.
+	    } else if (node.getBalance() >= +2) {
+
+	      // Right-Right case.
+	      if (balanceRight > Math.abs(balanceLeft)) {
+	    	  newParent = rightRightCase(node, leftNode, rightNode);
+
+	        // Right-Left case.
+	      } else {
+	    	  newParent = rightLeftCase(node, leftNode, rightNode);
+	      }
+	    }
+
+	    // Node either has a balance factor of 0, +1 or -1 which is fine.
+	    return newParent;
+		//Update root
+		/*if(newParent!=null) {
+			setRoot(newParent);
+		}*/
+	  }
+
+	  private IndexNode<T> leftLeftCase(IndexNode<T> node,
+			  IndexNode<T> leftNode, IndexNode<T> rightNode) {
+	    return rightRotation(node, leftNode, rightNode);
+	  }
+
+	  private IndexNode<T> leftRightCase(IndexNode<T> node,
+			  IndexNode<T> leftNode, IndexNode<T> rightNode) {
+		  if(rightNode==null) {
+			  return null;
+		  }
+		  IndexNode<T> leftLeftNode = 
+				  leftNode.getLeftNode()!=null?
+				  getValueOf(leftNode.getLeftNode()):null;
+		  IndexNode<T> leftRightNode = 
+				  leftNode.getRightNode()!=null?
+				  getValueOf(leftNode.getRightNode()):null;
+		  IndexNode<T> newLeft = leftRotation(leftNode,
+				  leftLeftNode,
+				  leftRightNode);
+		  node.setLeftNode(newLeft!=null?newLeft.getId():null);
+		  return leftLeftCase(node, newLeft, rightNode);
+	  }
+
+	  private IndexNode<T> rightRightCase(IndexNode<T> node,
+			  IndexNode<T> leftNode, IndexNode<T> rightNode) {
+	    return leftRotation(node, leftNode, rightNode);
+	  }
+
+	  private IndexNode<T> rightLeftCase(IndexNode<T> node,
+			  IndexNode<T> leftNode, IndexNode<T> rightNode) {
+		  if(rightNode==null) {
+			  return null;
+		  }
+		  IndexNode<T> righLeftNode = 
+				  rightNode.getLeftNode()!=null?
+						  getValueOf(rightNode.getLeftNode()):null;
+		  IndexNode<T> righRightNode = 
+				  rightNode.getRightNode()!=null?
+						  getValueOf(rightNode.getRightNode()):null;
+		  IndexNode<T> newRight = rightRotation(rightNode,
+				  righLeftNode,
+				  righRightNode);
+		node.setRightNode(newRight!=null?newRight.getId():null);
+	    return rightRightCase(node, leftNode, newRight);
+	  }
+
+	  private IndexNode<T> leftRotation(IndexNode<T> node,
+			  IndexNode<T> leftNode, IndexNode<T> rightNode) {
+		  if(rightNode==null) {
+			  return null;
+		  }
+		  //logger.warn("ROTATE LEFT!");
+
+		  printTree("ROTATE LEFT!");
+		  IndexNode<T> newParent = rightNode;
+	    node.setRightNode(newParent.getLeftNode());
+	    newParent.setLeftNode(node.getId());
+	    IndexNode<T> newRightNode = node.getRightNode()!=null?
+	    		getValueOf(node.getRightNode()):null;
+	    IndexNode<T> newParentRightNode = newParent.getRightNode()!=null?
+	    		getValueOf(newParent.getRightNode()):null;
+		update(node, leftNode, newRightNode);
+	    update(newParent, node, newParentRightNode);
+	    printTree("ROTATE LEFT!");
+	    return newParent;
+	  }
+
+	  private IndexNode<T> rightRotation(IndexNode<T> node,
+			  IndexNode<T> leftNode, IndexNode<T> rightNode) {
+		  if(leftNode==null) {
+			  return null;
+		  }
+		  //logger.warn("ROTATE RIGHT!");
+		  printTree("ROTATE RIGHT!");
+		  IndexNode<T> newParent = leftNode;
+		  node.setLeftNode(newParent.getRightNode());
+		  newParent.setRightNode(node.getId());
+		  IndexNode<T> newLeftNode = node.getLeftNode()!=null?
+				  getValueOf(node.getLeftNode()):null;
+		    IndexNode<T> newParentLeftNode = newParent.getLeftNode()!=null?
+		    		getValueOf(newParent.getLeftNode()):null;
+			update(node, newLeftNode, rightNode);
+	    update(newParent, newParentLeftNode, node);
+	    return newParent;
+	  }
+	  
+	  private void update(IndexNode<T> node,
+			  IndexNode<T> leftNode, IndexNode<T> rightNode) {
+		 logger.info("update:"+node);
+		 logger.info(leftNode+","+rightNode);
+	    long leftNodeHeight = (leftNode == null) ? -1 : leftNode.getHeight();
+	    long rightNodeHeight = (rightNode == null) ? -1 : rightNode.getHeight();
+
+	    // Update this node's height.
+	    node.setHeight(1 + Math.max(leftNodeHeight, rightNodeHeight));
+
+	    // Update balance factor.
+	    node.setBalance(rightNodeHeight - leftNodeHeight);
+	    /*if(node.getId()==root.getId()) {
+	    	System.out.println("WTF");
+	    }*/
+	    save(node.getId(), node);
+	  }
 
 	/**
 	 * @return root
@@ -125,13 +303,13 @@ public abstract class MinIndexedBinaryTree<T> implements Iterable<T>{
 	 * For debug purposes only. Do not use on large files, too expensive.
 	 */	
 	public void printTree(String title) {
-		logger.trace(title);
+		logger.info(title);
 		
 		@SuppressWarnings("rawtypes")
 		Iterator it = iterator();
 		while(it.hasNext()) {
 			Object next = it.next();
-			logger.trace(next);
+			logger.info(next);
 		}
 		logger.trace("--------------");
 	}
@@ -150,14 +328,39 @@ public abstract class MinIndexedBinaryTree<T> implements Iterable<T>{
 		Long leafNodeIndex = pointer.getLeftNode();
 		if(leafNodeIndex!=null) {
 			pointer = getValueOf(leafNodeIndex);
+			if(parentNode==null){
+				updateNodeState(pointer, true);
+			}
 		}else {
 			if(parentNode==null){
-				pointer.setLeftNode(nodeIndex);			
+				pointer.setLeftNode(nodeIndex);
+				updateNodeState(pointer, true, false);
 				save(pointer.getId(), pointer);
 			}
 			return null;
 		}
 		return pointer;
+	}
+	
+	private void updateNodeState(IndexNode<T> node, boolean left) {
+		updateNodeState(node, left, true);
+	}
+	private void updateNodeState(IndexNode<T> node, boolean left, boolean doSave) {
+		if(node.getLeftNode()!=null && left) {
+			node.setHeight(node.getHeight()+1);
+			node.setBalance(node.getBalance()-1);
+		}else if(node.getRightNode()!=null) {
+			node.setHeight(node.getHeight()+1);
+			node.setBalance(node.getBalance()+1);			
+		}else {
+			return;
+		}
+		if(node.getBalance()>1 || node.getBalance()<1) {
+			lazyBalanceQeueu.add(node.getId());
+		}
+		if(doSave) {
+			save(node.getId(), node);
+		}
 	}
 
 	/**
@@ -173,9 +376,13 @@ public abstract class MinIndexedBinaryTree<T> implements Iterable<T>{
 		Long leafNodeIndex = pointer.getRightNode();
 		if(leafNodeIndex!=null) {
 			pointer = getValueOf(leafNodeIndex);
+			if(parentNode==null){
+				updateNodeState(pointer, false);
+			}
 		}else {
 			if(parentNode==null){
-				pointer.setRightNode(nodeIndex);			
+				pointer.setRightNode(nodeIndex);
+				updateNodeState(pointer, false, false);
 				save(pointer.getId(), pointer);
 			}
 			return null;
@@ -195,22 +402,61 @@ public abstract class MinIndexedBinaryTree<T> implements Iterable<T>{
 	 * 
 	 */
 	protected void add(IndexNode<T> pointer, IndexNode<T> value, long nodeIndex, IndexNode<T> parentNode) {
-		
+		//List<Long> mixedValues = new ArrayList<Long>();
+		IndexNode<T> root = pointer;
 		while(pointer!=null) {
 			
 			logger.debug("pointer"+pointer.getKey()+",node"+value.getKey());
-			
+			IndexNode<T> prePointer = pointer;
+			boolean goLeft = false;
 			if(value.getKey().compareTo(pointer.getKey())<0) {
 				//Go left
 				pointer = goLeft(pointer, value, nodeIndex, parentNode);
+				goLeft = true;
+				//updateNodeState(prePointer, true);
 			}else if(value.getKey().compareTo(pointer.getKey())>0) {
 				//Go right
 				pointer = goRight(pointer, value, nodeIndex, parentNode);
+				//updateNodeState(prePointer, false);
 			}else{
 				//Can't decide, Handle it!
-				pointer = handleMixedValues(pointer, value, nodeIndex, parentNode);		
+				//mixedValues.add(pointer.getId());
+				pointer = handleMixedValues(pointer, value, nodeIndex, parentNode);
+				//updateNodeState(prePointer, false);
 				
 			}
+			if(parentNode==null && (pointer==null || prePointer.getId()!=pointer.getId())) {
+				IndexNode<T> leftNode = prePointer.getLeftNode()!=null?getValueOf(prePointer.getLeftNode()):null;
+			    IndexNode<T> rightNode = prePointer.getRightNode()!=null?getValueOf(prePointer.getRightNode()):null;
+			    update(prePointer, leftNode, rightNode);
+			    if(pointer!=null) {
+			    	pointer = getValueOf(pointer.getId());
+			    	if(prePointer.getId()==pointer.getId()) {
+			    		setRoot(pointer);
+			    	}
+			    }
+			    if(prePointer.getBalance()>1 || prePointer.getBalance()<1) {
+					lazyBalanceQeueu.add(prePointer.getId());
+				}
+			}
+		}
+		/*		if(pointer.getLeftNode()!=null && value.getId()!=pointer.getId()) {
+					//Pointer may be lower value/ higher priority so go left
+					sendPointerToLeft(pointer, value, parentNode);
+				}*/
+		if(parentNode==null) {		
+			balance();
+		
+			/*mixedValues.forEach(entry -> {
+				Long leftNodeId = entry;
+				IndexNode<T> leftNode = getValueOf(leftNodeId);
+				if(leftNode.getLeftNode()!=null) {
+					//Get actual value node from implementor(May be file)
+					IndexNode<T> leftPointer = getValueOf(leftNode.getLeftNode());
+					//Restart for sub tree
+					add(leftPointer, leftNode, leftNode.getId(), leftNode);
+				}
+			});*/
 		}
 
 	}
@@ -230,12 +476,10 @@ public abstract class MinIndexedBinaryTree<T> implements Iterable<T>{
 	 */
 	protected IndexNode<T> handleMixedValues(IndexNode<T> pointer, IndexNode<T> value, long nodeIndex, IndexNode<T> parentNode) {
 		doInnerSwap(value, pointer);
-		//Split lows to right, heigh's to left
+		//value is left with low valued, so go right
 		if(pointer.getLeftNode()!=null) {
-			//Pointer may be lower value/ higher priority so go left
 			sendPointerToLeft(pointer, value, parentNode);
 		}
-		//value is left with low valued, so go right
 		return goRight(pointer, value, nodeIndex, parentNode);
 	}
 
@@ -255,6 +499,10 @@ public abstract class MinIndexedBinaryTree<T> implements Iterable<T>{
 		//Restart for sub tree
 		add(leftPointer, leftNode, leftNode.getId(), value);
 			
+	}
+	
+	public void setRoot(IndexNode<T> root) {
+		this.root = root;
 	}
 
 	/**
@@ -305,7 +553,7 @@ public abstract class MinIndexedBinaryTree<T> implements Iterable<T>{
 		public MinIndexedBinaryTreeIterator(long startAtHeapSize) {
 			this.startAtHeapSize = startAtHeapSize;
 			nextIndexStack = new Stack<Long>();
-			nextIndexStack.add(0l);
+			nextIndexStack.add(root.getId());
 			pointer = root;
 		}
 		

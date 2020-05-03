@@ -13,6 +13,24 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class IndexNode<T> extends AbstractDataNode<T> implements Serializable{
 	
 
+	private long balance;
+	private long height;
+	public long getBalance() {
+		return balance;
+	}
+
+	public void setBalance(long balance) {
+		this.balance = balance;
+	}
+
+	public long getHeight() {
+		return height;
+	}
+
+	public void setHeight(long height) {
+		this.height = height;
+	}
+
 	@JsonProperty("leftNode")
 	private Long leftNode;
 	@JsonProperty("rightNode")

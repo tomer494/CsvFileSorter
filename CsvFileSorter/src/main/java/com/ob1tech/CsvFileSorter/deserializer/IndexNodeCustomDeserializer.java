@@ -46,10 +46,19 @@ public class IndexNodeCustomDeserializer<T extends Comparable<T>> extends Abstra
 			vNode = node.get("rightNode");
 			Long rightNode = vNode.isNull()?null:vNode.asLong();
 			
+			vNode = node.get("balance");
+			Long balance = vNode.isNull()?null:vNode.asLong();
+			
+			vNode = node.get("height");
+			Long height = vNode.isNull()?null:vNode.asLong();
+			
+			
 			vNode = node.get("key");
 			SortKey<T> indexKey = getIndexKeyByType(vNode);
 	        
 	        indexNode = new IndexNode<T>(id, indexKey, leftNode, rightNode);
+	        indexNode.setBalance(balance);
+	        indexNode.setHeight(height);
 	        
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

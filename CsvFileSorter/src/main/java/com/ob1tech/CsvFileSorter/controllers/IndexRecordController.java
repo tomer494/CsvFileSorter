@@ -111,7 +111,7 @@ public class IndexRecordController<T extends Comparable<T>>
 	protected void save(long nodeIndex, IndexNode<T> value) {
 		Path filePath = getFilePath(nodeIndex);
 		ObjectMapper mapper = getObjectMapper();
-		Utilities.save(value, filePath, mapper);			
+		Utilities.save(value, filePath, mapper);
 	}
 
 	/**

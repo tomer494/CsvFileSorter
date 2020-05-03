@@ -31,6 +31,7 @@ public class Utilities {
 	
 	private static Logger logger = LogManager.getLogger(Utilities.class);
 	private ThreadPoolExecutor threadPool;
+	private static Object saveLock = new Object();
 	
 	public Utilities() {
 		super();
@@ -79,44 +80,52 @@ public class Utilities {
 
 	public static Object getValueOf(Path filePath, ObjectMapper mapper, Class<?> clazz) {
 		Object value = null;
-		try {
-			//logger.info("Reading "+filePath.getFileName().toString());
-			List<String> readLines = Files.readAllLines(filePath);
-			if(!readLines.isEmpty()) {
-				String rawString = readLines.get(0);
-				value = mapper.readValue(rawString, clazz);
-			}else {
-				logger.error("Error reading file "+filePath.getFileName().getFileName());
+		synchronized (saveLock) {
+			try {
+				//logger.info("Reading "+filePath.getFileName().toString());
+				List<String> readLines = Files.readAllLines(filePath);
+				if(!readLines.isEmpty()) {
+					String rawString = readLines.get(0);
+					value = mapper.readValue(rawString, clazz);
+				}else {
+					logger.error("Error reading file "+filePath.getFileName().getFileName());
+				}
+			} catch (FileNotFoundException e) {
+				logger.error("Error reading "+filePath.getFileName(),e);
+			} catch (IOException e) {
+				logger.error("Error reading "+filePath.getFileName(),e);
+			} catch (Exception e) {
+				logger.error("Error reading "+filePath.getFileName(),e);
+			}finally {
+				
 			}
-		} catch (FileNotFoundException e) {
-			logger.error("Error reading "+filePath.getFileName(),e);
-		} catch (IOException e) {
-			logger.error("Error reading "+filePath.getFileName(),e);
-		} catch (Exception e) {
-			logger.error("Error reading "+filePath.getFileName(),e);
 		}
 		return value;
 	}
 	
 	public static void save(Object obj, Path filePath, ObjectMapper mapper) {
-		File file = filePath.toFile();
+		File file;
 		FileOutputStream fileOut = null;
-		try {
-
-			fileOut = new FileOutputStream(file);
-			String serialized = mapper.writeValueAsString(obj);
-			fileOut.write(serialized.getBytes());
-		} catch (Exception ex) {
-			logger.error("Error writing "+filePath.getFileName(),ex);
-		}finally {
+		synchronized (saveLock) {
 			try {
-				if(fileOut!=null) {
-					fileOut.close();
+					file = filePath.toFile();
+					fileOut = new FileOutputStream(file);
+					String serialized = mapper.writeValueAsString(obj);
+					fileOut.write(serialized.getBytes());
+			
+			} catch (Exception ex) {
+				logger.error("Error writing "+filePath.getFileName(),ex);
+			}finally {
+				try {
+					if(fileOut!=null) {
+						fileOut.flush();
+						fileOut.close();
+					}
+				} catch (IOException e) {
+					logger.error("Error closing "+filePath.getFileName(),e);
 				}
-			} catch (IOException e) {
-				logger.error("Error closing "+filePath.getFileName(),e);
 			}
-		}		
+		}
 	}
 
 	public static String readLine(Path path) {
