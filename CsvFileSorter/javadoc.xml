@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="javadoc">
+    <target name="javadoc">
+        <javadoc access="public" author="true" classpath="target/test-classes;C:\Users\tomer\.m2\repository\com\opencsv\opencsv\4.1\opencsv-4.1.jar;C:\Users\tomer\.m2\repository\org\apache\commons\commons-text\1.1\commons-text-1.1.jar;C:\Users\tomer\.m2\repository\org\apache\commons\commons-lang3\3.6\commons-lang3-3.6.jar;C:\Users\tomer\.m2\repository\commons-beanutils\commons-beanutils\1.9.3\commons-beanutils-1.9.3.jar;C:\Users\tomer\.m2\repository\commons-logging\commons-logging\1.2\commons-logging-1.2.jar;C:\Users\tomer\.m2\repository\junit\junit\3.8.1\junit-3.8.1.jar;C:\Users\tomer\.m2\repository\commons-collections\commons-collections\3.2.2\commons-collections-3.2.2.jar" destdir="doc" doctitle="CSV File sorting tool" nodeprecated="false" nodeprecatedlist="false" noindex="false" nonavbar="false" notree="false" packagenames="com.ob1tech.CsvFileSorter.algorithms.sort" source="1.8" sourcefiles="src/main/java/com/ob1tech/CsvFileSorter/App.java" sourcepath="src/test/java;src/main/java" splitindex="true" use="true" version="true"/>
+    </target>
+</project>
