@@ -4,6 +4,12 @@ import java.io.Serializable;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * This class represents an index node data model
+ * @author Madmon Tomer
+ *
+ * @param <T>
+ */
 public class IndexNode<T> extends AbstractDataNode<T> implements Serializable{
 	
 
@@ -11,6 +17,7 @@ public class IndexNode<T> extends AbstractDataNode<T> implements Serializable{
 	private Long leftNode;
 	@JsonProperty("rightNode")
 	private Long rightNode;
+	
 	
 	
 	@Override

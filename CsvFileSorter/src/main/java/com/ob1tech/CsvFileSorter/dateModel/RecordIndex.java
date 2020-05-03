@@ -5,11 +5,10 @@ import java.io.Serializable;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Minimal {@link AbstractDataNode} implementation
- * @see AbstractDataNode
+ * This class represents RecordIndex data model
  * @author Madmon Tomer
  *
- * @param <R> record
+ * @param <T> record key type
  * @param String record key value
  *
  */

@@ -5,6 +5,15 @@ import java.util.Map;
 
 import com.ob1tech.CsvFileSorter.controllers.BatchController;
 
+/**
+ * Async extention of BatchController
+ * injects an AsyncIndexRecordController to the origional BatchController
+ * @author Madmon Tomer
+ *
+ * @param <T>
+ * @see BatchController
+ * @see AsyncIndexRecordController
+ */
 public class AsyncBatchController<T extends Comparable<T>> extends BatchController<T> {
 
 	@Override

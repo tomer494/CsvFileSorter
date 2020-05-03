@@ -20,6 +20,12 @@ import com.ob1tech.CsvFileSorter.controllers.ControllerBuilder;
  */
 public class CSVFileSorter {
 	
+	/**
+	 * 
+	 * Enum of program's running options
+	 * @author Madmon Tomer
+	 *
+	 */
 	public static enum ARGS{
 		HELP("--help","Optional, See this help"),
 		HAS_HEADER("-head","Indicate file has header record at first row"),
@@ -185,9 +191,22 @@ public class CSVFileSorter {
     	}
 	}
 
+	/**
+	 * Build and execute the main program controller.
+	 * Please use --help for complete param explanation
+	 * @param skipHead indication of a header in the file
+	 * @param filePath the file path to work on
+	 * @param keyIndex Index of the key column starting with 0
+	 * @param bufferSize Max records to read at any given time
+	 * @param keyType define the key type, used for sorting
+	 *
+	 */
 	protected void run(byte skipHead, String filePath, int keyIndex, int bufferSize, String keyType) {
 		
-    	ControllerBuilder builder = new ControllerBuilder(filePath);
+    	/**
+    	 * Build the controller with the given specifications
+    	 */
+		ControllerBuilder builder = new ControllerBuilder(filePath);
     	
     	builder.withSkipHeader(skipHead>0);
     	
@@ -196,10 +215,18 @@ public class CSVFileSorter {
 		builder.withKeyType( keyType );
     	
 		Controller<?> controller = builder.build();
+		
+		/**
+		 * Actually run the program engine
+		 */
     	controller.execute();
     	
 	}
 
+	/**
+	 * Help info output helper
+	 * @return the help guide
+	 */
 	protected static String getHelp() {
 		String output = "java -jar csvFileSort.jar <File-path> options?\n"
 				+ "options:\n";

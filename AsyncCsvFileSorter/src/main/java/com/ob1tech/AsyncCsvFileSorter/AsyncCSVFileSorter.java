@@ -4,6 +4,11 @@ import com.ob1tech.AsyncCsvFileSorter.controllers.AsyncController;
 import com.ob1tech.AsyncCsvFileSorter.controllers.AsyncControllerBuilder;
 import com.ob1tech.CsvFileSorter.CSVFileSorter;
 
+/**
+ * Async CsvFileSorter version
+ * @author Madmon Tomer
+ * @see CSVFileSorter
+ */
 public class AsyncCSVFileSorter extends CSVFileSorter {
 	
 	public static void main( String[] args )

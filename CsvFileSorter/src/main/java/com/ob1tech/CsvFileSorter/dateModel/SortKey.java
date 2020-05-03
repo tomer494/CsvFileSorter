@@ -1,5 +1,13 @@
 package com.ob1tech.CsvFileSorter.dateModel;
 
+/**
+ * It contains the sorting logic witch means that a batch is
+ * highr only if alll its inner components are higher then the other, same as lower
+ * otherwise will calculated as compared {@link #compareTo(SortKey)}.
+ * @author Madmon Tomer
+ *
+ * @param <T>
+ */
 public class SortKey<T> implements Comparable<SortKey<T>> {
 	
 	private Comparable<T> maxValue;
@@ -18,6 +26,11 @@ public class SortKey<T> implements Comparable<SortKey<T>> {
 	}
 
 
+	/**
+	 * A sort key is only higher if bouth min and max are highr.
+	 * A sort key is only smaller if bouth min and max are smaller.
+	 * Otherwise it is considered equal and the program should deel with that.
+	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public int compareTo(SortKey<T> o) {

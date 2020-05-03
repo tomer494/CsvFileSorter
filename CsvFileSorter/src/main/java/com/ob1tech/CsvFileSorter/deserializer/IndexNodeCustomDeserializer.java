@@ -7,6 +7,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.ob1tech.CsvFileSorter.dateModel.IndexNode;
 import com.ob1tech.CsvFileSorter.dateModel.SortKey;
 
+/**
+ * IndexNode json deserializer
+ * @author Madmon Tomer
+ *
+ * @param <T> key data type
+ * @see AbstractDeserializers
+ */
 public class IndexNodeCustomDeserializer<T extends Comparable<T>> extends AbstractDeserializer<T, IndexNode<T>> {
     
     /**

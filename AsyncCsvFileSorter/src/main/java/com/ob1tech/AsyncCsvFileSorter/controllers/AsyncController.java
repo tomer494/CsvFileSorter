@@ -18,6 +18,15 @@ import com.ob1tech.CsvFileSorter.controllers.Controller;
 import com.ob1tech.CsvFileSorter.dateModel.RecordBatchNode;
 import com.ob1tech.CsvFileSorter.utils.Utilities;
 
+/**
+ * Asyncronius extention of {@link Controller}
+ * Implements a task queue to handle batches. {@link RecordBatchQueue}
+ * Implements an Asyncronius {@link BatchController}
+ * @author Madmon Tomer
+ *
+ * @param <T>
+ * @see Controller
+ */
 public class AsyncController<T extends Comparable<T>> extends Controller<T> implements Observer {
 	
 	private static final String QUEUE_SUFFIX = ".que";
@@ -92,6 +101,9 @@ public class AsyncController<T extends Comparable<T>> extends Controller<T> impl
 		// Wait for queue		
 	}
 
+	/**
+	 * Overide the origionat to set up queue and pusshing nodes to it
+	 */
 	@Override
 	protected void updateBatchController(RecordBatchNode<T> recordBatchNode) {
 		
@@ -135,6 +147,10 @@ public class AsyncController<T extends Comparable<T>> extends Controller<T> impl
 		super.updateBatchController(recordBatchNode);
 	}
 
+	/**
+	 * Adds RecordBatchNode to qeuqeu for later proccess
+	 * @param recordBatchNode
+	 */
 	private void putToQueue(RecordBatchNode<T> recordBatchNode) {
 		long batchId = tasksCount.getAndIncrement();
 		Path filePath = Utilities.constractFilePath(getFilePath(), batchId, QUEUE_SUFFIX);
@@ -152,13 +168,8 @@ public class AsyncController<T extends Comparable<T>> extends Controller<T> impl
 		}
 
 		public void run() {
-			/*synchronized (lock) {
-				ocupied = true;
-			}*/
 			superUpdateBatchController(recordBatchNode);
-			/*synchronized (lock) {
-				ocupied = false;
-			}*/
+			//Let the queue know a task has finished
 			setChanged();
 			notifyObservers();
 		}
@@ -169,6 +180,11 @@ public class AsyncController<T extends Comparable<T>> extends Controller<T> impl
 		
 	}
 	
+	/**
+	 * Batch queue to controll adding batch node elements to the sorting tree.
+	 * @author Madmon Tomer
+	 *
+	 */
 	private class RecordBatchQueue extends Observable implements Runnable, Observer{
 		
 		private BatchController<T> batchController;
@@ -191,74 +207,69 @@ public class AsyncController<T extends Comparable<T>> extends Controller<T> impl
 			//runningTreads.getAndSet((int) tasksCount.get());
 			boolean queueIsEmpty = waitingBatches.isEmpty();
 			
-			//synchronized (queueLock) {
-				while (!(endReadingTheFile && waitingBatches.size()==0)) {
-					String message = String.format("QUEUE: Reading File is %s, Queue is %s empty, Waiting %s, Handled indexes: %s",
-							(endReadingTheFile?"done!":"in progress..."),
-							(queueIsEmpty?"":"not"),
-							currentTaskCount-batchController.getBatchCounter()-1,
-							waitingBatches.size());
-					getLog().info(message);
-					boolean waitABit = true;
-					if (!queueIsEmpty && batchController.getBatchCounter()>0) {
-						boolean isOcupied = false;
-						/*synchronized (lock) {
-							isOcupied = ocupied;
-							if (!isOcupied) {
-								ocupied = true;
-							}
-						}*/
-						if (runningTreads.get()<maxConcurrentAllowed()) {
-							runningTreads.getAndIncrement();
-							//!isOcupied) {
-							
-							long batchId = waitingBatches.remove(0);
-							getLog().info("QUEUE: Handle queued task " + batchId);
-							Path queueFilePath = Utilities.constractFilePath(getFilePath(), batchId, QUEUE_SUFFIX);
-							Path batchFilePath = Utilities.constractFilePath(getFilePath(), batchId, BATCH_SUFFIX);
-							Utilities.moveFile(queueFilePath, batchFilePath, true);
-							@SuppressWarnings("unchecked")
-							RecordBatchNode<T> recordBatchNode = (RecordBatchNode<T>) Utilities.getValueOf(batchFilePath,
-									batchController.getObjectMapper(), RecordBatchNode.class);
-							
-							Runnable BatchControllerUpdateor = new BatchControllerUpdateor(recordBatchNode);
-							((Observable)BatchControllerUpdateor).addObserver(this);
-							threadPoolUtilities.getThreadPool().execute(BatchControllerUpdateor);
-							
-							
-							//Task time is sufficient waiting time
-							waitABit = false;
-						}
+			while (!(endReadingTheFile && waitingBatches.size()==0)) {
+				String message = String.format("QUEUE: Reading File is %s, Queue is %s empty, Waiting %s, Handled indexes: %s",
+						(endReadingTheFile?"done!":"in progress..."),
+						(queueIsEmpty?"":"not"),
+						currentTaskCount-batchController.getBatchCounter()-1,
+						waitingBatches.size());
+				logger.info(message);
+				boolean waitABit = true;
+				if (!queueIsEmpty && batchController.getBatchCounter()>0) {
+					boolean isOcupied = false;
+
+
+					if (runningTreads.get()<maxConcurrentAllowed()) {
+						runningTreads.getAndIncrement();
+						//!isOcupied) {
+						
+						long batchId = waitingBatches.remove(0);
+						logger.info("QUEUE: Handle queued task " + batchId);
+						Path queueFilePath = Utilities.constractFilePath(getFilePath(), batchId, QUEUE_SUFFIX);
+						Path batchFilePath = Utilities.constractFilePath(getFilePath(), batchId, BATCH_SUFFIX);
+						Utilities.moveFile(queueFilePath, batchFilePath, true);
+						@SuppressWarnings("unchecked")
+						RecordBatchNode<T> recordBatchNode = (RecordBatchNode<T>) Utilities.getValueOf(batchFilePath,
+								batchController.getObjectMapper(), RecordBatchNode.class);
+						
+						Runnable BatchControllerUpdateor = new BatchControllerUpdateor(recordBatchNode);
+						((Observable)BatchControllerUpdateor).addObserver(this);
+						threadPoolUtilities.getThreadPool().execute(BatchControllerUpdateor);
+						
+						
+						//Task time is sufficient waiting time
+						waitABit = false;
 					}
-					if (waitABit) {
-						synchronized (queueLock) {
-							//wait a bit before checking if another task is waiting
-							try {
-								queueLock.wait(60*1000);
-							} catch (InterruptedException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-						}
-					}
-					currentTaskCount = tasksCount.get();
-					queueIsEmpty = waitingBatches.isEmpty();
-					
 				}
-				while(runningTreads.get()>0) {
+				if (waitABit) {
 					synchronized (queueLock) {
 						//wait a bit before checking if another task is waiting
 						try {
-							queueLock.wait(100);
+							queueLock.wait(60*1000);
 						} catch (InterruptedException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					}
 				}
-				setChanged();
-				notifyObservers();
-			//}
+				currentTaskCount = tasksCount.get();
+				queueIsEmpty = waitingBatches.isEmpty();
+				
+			}
+			while(runningTreads.get()>0) {
+				synchronized (queueLock) {
+					//wait a bit before checking if another task is waiting
+					try {
+						queueLock.wait(100);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
+			//Let the controller know the queue is done with all the tasks
+			setChanged();
+			notifyObservers();
 			
 		}
 
@@ -273,7 +284,7 @@ public class AsyncController<T extends Comparable<T>> extends Controller<T> impl
 		public void update(Observable o, Object arg) {
 			runningTreads.decrementAndGet();
 			Long id = ((BatchControllerUpdateor)o).getRecordBatchNode().getId();
-			getLog().info("Queue Notified on finished batch "+id
+			logger.info("Queue Notified on finished batch "+id
 					+" running "+runningTreads);
 			
 			synchronized (queueLock) {
@@ -286,7 +297,7 @@ public class AsyncController<T extends Comparable<T>> extends Controller<T> impl
 
 	@Override
 	public void update(Observable o, Object arg) {
-		getLog().info("Controler Notified!");
+		logger.info("Controler Notified!");
 		synchronized (runlock) {
 			runlock.notify();
 		}

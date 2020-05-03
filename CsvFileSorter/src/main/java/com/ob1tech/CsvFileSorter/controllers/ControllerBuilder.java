@@ -3,6 +3,12 @@ package com.ob1tech.CsvFileSorter.controllers;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+/**
+ * This class builds a new controller and facilitating defaults or
+ *  specified parameters
+ * @author Madmon Tomer
+ *
+ */
 public class ControllerBuilder {
 	
 	private String filePath;

@@ -12,6 +12,13 @@ import com.ob1tech.CsvFileSorter.dateModel.RecordBatchNode;
 import com.ob1tech.CsvFileSorter.dateModel.RecordIndex;
 import com.ob1tech.CsvFileSorter.dateModel.SortKey;
 
+/**
+ * RecordBatchNode json deserializer
+ * @author Madmon Tomer
+ *
+ * @param <T>
+ * @see AbstractDeserializer
+ */
 public class RecordsNodeCustomDeserializer<T extends Comparable<T>> extends AbstractDeserializer<T, RecordBatchNode<T>> {
     
     /**

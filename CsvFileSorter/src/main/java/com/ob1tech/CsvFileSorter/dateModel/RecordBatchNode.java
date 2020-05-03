@@ -3,6 +3,13 @@ package com.ob1tech.CsvFileSorter.dateModel;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * This class represents an Record Batch Node data model.
+ * 
+ * @author Madmon Tomer
+ *
+ * @param <T>
+ */
 public class RecordBatchNode<T extends Comparable<T>>
 	extends AbstractDataNode<T> {
 
@@ -19,8 +26,6 @@ public class RecordBatchNode<T extends Comparable<T>>
 		records = new LinkedList<RecordIndex<T>>();
 	}
 
-	//List<Record<T>> records;
-
 	@Override
 	public int compareTo(SortKey<T> o) {
 		return this.getKey().compareTo(o);
@@ -31,9 +36,12 @@ public class RecordBatchNode<T extends Comparable<T>>
 		return getKey().toString();
 	}
 
+	/**
+	 * Appending a new RecordIndex in and calculating the new min/max value sortKey
+	 * @param node
+	 */
 	@SuppressWarnings("unchecked")
 	public void insert(RecordIndex<T> node) {
-		//notFullOrThrowError();
 		T maxValue = null;
 		T minValue = null;
 		SortKey<T> key = getKey();
@@ -61,6 +69,9 @@ public class RecordBatchNode<T extends Comparable<T>>
 		
 	}
 	
+	/**
+	 * clear batch data and reset min/max values
+	 */
 	public void reset() {
 		getRecords().clear();
 		SortKey<T> key = getKey();
@@ -76,83 +87,6 @@ public class RecordBatchNode<T extends Comparable<T>>
 		this.records = records;
 	}
 	
-	/*
-	@JsonProperty("heapedData")
-	private List<AbstractIndexNode<R,T>> heapedData;
-	
-	@JsonProperty("maxLength")
-	private int maxLength;
-	
-	@JsonProperty("maxValue")
-	private T maxValue;
 
-
-
-	public RecordsNode(int maxLength) {
-		super();
-		this.maxLength = maxLength;
-		heapedData = new LinkedList<AbstractIndexNode<R,T>>();
-	}
-
-	
-	@Override
-	public int compareTo(IndexKey<T> o) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-	
-	public int getMaxLength() {
-		return maxLength;
-	}
-
-	public void setMaxLength(int maxLength) {
-		this.maxLength = maxLength;
-	}
-	
-	public List<AbstractIndexNode<R,T>> getHeapedData() {
-		return heapedData;
-	}
-
-	public void setHeapedData(List<AbstractIndexNode<R,T>> HeapedData) {
-		this.heapedData = HeapedData;
-	}
-
-
-	
-	
-	private void notFullOrThrowError() {
-		if(isFull()) {
-			throw new IndexOutOfBoundsException("List is full");
-		}
-		
-	}
-
-	private boolean isFull() {
-		return heapedData.size()==maxLength;
-	}
-
-	public void reset() {
-		heapedData.clear();
-		maxValue = null;
-		
-	}
-	
-	public void insert(AbstractIndexNode<R,T> node) {
-		insert(heapedData.size(), node);
-	}
-	
-	public T getMaxValue() {
-		return maxValue;
-	}
-
-
-
-	public void setMaxValue(T maxValue) {
-		this.maxValue = maxValue;
-	}
-*/
-
-
-	
 	
 }

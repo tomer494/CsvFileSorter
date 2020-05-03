@@ -9,10 +9,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * This class represents a generic record Node.
- * It stores a {@link #record}
+ * It stores an id
  * and a comparable {@link #key} used for sorting the records.
  * @author Madmon Tomer
- * @param <R> record
  * @param <T> comparable record key value
  * @see Comparable
  */
@@ -29,7 +28,7 @@ public abstract class AbstractDataNode<T>
 	
 	/**
 	 * This is the valueing key of the referencing value.
-	 * Key is a comparable key of a String type
+	 * Key is a comparable key of a <T> type
 	 * @see Comparable
 	 */
 	@JsonProperty("key")

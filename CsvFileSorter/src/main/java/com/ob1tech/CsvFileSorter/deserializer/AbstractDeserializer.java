@@ -1,15 +1,18 @@
 package com.ob1tech.CsvFileSorter.deserializer;
 
-import org.apache.commons.lang3.math.NumberUtils;
-
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import com.ob1tech.CsvFileSorter.dateModel.IndexNode;
 import com.ob1tech.CsvFileSorter.dateModel.SortKey;
 
+/**
+ * This an abstract deserializer that implements only the skort ke deserialization
+ * @author Madmon Tomer
+ *
+ * @param <T> key data type
+ * @param <N> implemintation object type
+ */
 public abstract class AbstractDeserializer<T, N> extends StdDeserializer<N> {
     
     /**
@@ -18,14 +21,6 @@ public abstract class AbstractDeserializer<T, N> extends StdDeserializer<N> {
 	private static final long serialVersionUID = 901250332340210404L;
 	
 	String keyType;
-
-	/*public String getKeyType() {
-		return keyType;
-	}
-
-	public void setKeyType(String keyType) {
-		this.keyType = keyType;
-	}*/
 
 	public AbstractDeserializer(Class<?> vc) {
         super(vc);

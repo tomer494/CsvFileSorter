@@ -1,2 +1,6 @@
 com.ob1tech.CsvFileSorter
 com.ob1tech.CsvFileSorter.algorithms.sort
+com.ob1tech.CsvFileSorter.controllers
+com.ob1tech.CsvFileSorter.dateModel
+com.ob1tech.CsvFileSorter.deserializer
+com.ob1tech.CsvFileSorter.utils

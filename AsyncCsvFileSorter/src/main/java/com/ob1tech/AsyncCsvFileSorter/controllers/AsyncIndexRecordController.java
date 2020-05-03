@@ -1,11 +1,8 @@
 package com.ob1tech.AsyncCsvFileSorter.controllers;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,13 +10,27 @@ import org.apache.logging.log4j.Logger;
 import com.ob1tech.CsvFileSorter.controllers.BatchController;
 import com.ob1tech.CsvFileSorter.controllers.IndexRecordController;
 import com.ob1tech.CsvFileSorter.dateModel.IndexNode;
-import com.ob1tech.CsvFileSorter.utils.Utilities;
 
+/**
+ * Async Index record controller extends the origional {@link IndexRecordController}
+ * and adds it asyncronus capabilities.
+ * The tree is synchronized by its nodes, allowing paralel indexing.
+ * When a node is reached it is locked and after passing to adiferent one it is releases.
+ * The gratest advantage is in large files where many nodes needs to be passed by.
+ * @author Madmon Tomer
+ *
+ * @param <T>
+ * @see IndexRecordController
+ * @see BatchController
+ */
 public class AsyncIndexRecordController<T extends Comparable<T>> extends IndexRecordController<T> {
 
 	private Object lock,lock2;
-	private Utilities lockUtilities;
+	/**
+	 * Node lock tacker
+	 */
 	private Map<Long, Boolean> treeLockList;
+	
 	private Logger logger = LogManager.getLogger(AsyncIndexRecordController.class);
 	
 
@@ -28,12 +39,14 @@ public class AsyncIndexRecordController<T extends Comparable<T>> extends IndexRe
 		super(batchController, dataFile, keyType, maxInMemoryNodes);
 		lock = new Object();
 		lock2 = new Object();
-		lockUtilities = new Utilities();
 		treeLockList = new ConcurrentHashMap<Long, Boolean>();
 	}
 	
+	/**
+	 * Adding nodes to the tree.
+	 * Lock and release nodes as it goes
+	 */
 	protected void add(IndexNode<T> pointer, IndexNode<T> value, long nodeIndex, IndexNode<T> parentNode) {
-		//Long treeHead = pointer.getId();
 		if(pointer.getId()==0l) {
 			synchronized (lock) {
 				while(treeLockList.getOrDefault(0l, false)) {
